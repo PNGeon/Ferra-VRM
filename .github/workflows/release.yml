@@ -1,0 +1,73 @@
+name: release
+
+# Build cross-platform binaries and attach them to a GitHub Release when a v* tag is pushed.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.target-name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target-name: windows-x64
+            bin: ferra-vrm.exe
+            archive: ferra-vrm-windows-x64.zip
+          - os: macos-latest
+            target-name: macos-arm64
+            bin: ferra-vrm
+            archive: ferra-vrm-macos-arm64.tar.gz
+          - os: macos-13
+            target-name: macos-x64
+            bin: ferra-vrm
+            archive: ferra-vrm-macos-x64.tar.gz
+          - os: ubuntu-latest
+            target-name: linux-x64
+            bin: ferra-vrm
+            archive: ferra-vrm-linux-x64.tar.gz
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux deps
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p dist/ferra-vrm
+          cp target/release/${{ matrix.bin }} dist/ferra-vrm/
+          [ -d assets ] && cp -r assets dist/ferra-vrm/ || true
+          cp README.md LICENSE-MIT LICENSE-APACHE dist/ferra-vrm/
+          tar -C dist -czf ${{ matrix.archive }} ferra-vrm
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist/ferra-vrm | Out-Null
+          Copy-Item target/release/${{ matrix.bin }} dist/ferra-vrm/
+          if (Test-Path assets) { Copy-Item -Recurse assets dist/ferra-vrm/ }
+          Copy-Item README.md, LICENSE-MIT, LICENSE-APACHE dist/ferra-vrm/
+          Compress-Archive -Path dist/ferra-vrm/* -DestinationPath ${{ matrix.archive }}
+
+      - name: Upload to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.archive }}
+          generate_release_notes: true
