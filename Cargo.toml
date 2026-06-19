@@ -32,9 +32,10 @@ resolver = "3"
 members = ["crates/vrm_stage_core"]
 
 [workspace.dependencies]
-# ktx2 + basis-universal decode GPU-compressed (UASTC) textures for optional rooms;
-# jpeg for VRoid VRMs (which embed JPEG textures — loader errors without it).
-bevy = { version = "0.18", features = ["ktx2", "basis-universal", "jpeg"] }
+# jpeg for VRoid VRMs (which embed JPEG textures — the loader errors without it). ktx2 +
+# basis-universal (a heavy C++ basis_universal build, only for optional KTX2 rooms the public app
+# doesn't ship) were dropped: they OOM'd the Linux release build to compile an unused feature.
+bevy = { version = "0.18", features = ["jpeg"] }
 bevy_vrm1 = "0.7.1"
 bevy_panorbit_camera = "0.34"
 bevy_egui = "0.39.1"

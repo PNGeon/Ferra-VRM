@@ -36,20 +36,12 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev
 
-      # The candle + bevy release build is disk- and memory-heavy; the default ubuntu runner
-      # OOM-kills the link step (~7 min in) and can run out of disk. Reclaim preinstalled SDKs
-      # we don't use and add swap so the build has headroom.
-      - name: Free disk space + add swap (Linux)
+      # The candle release build is disk-heavy; reclaim preinstalled SDKs we don't use. Best-effort.
+      - name: Free disk space (Linux)
         if: runner.os == 'Linux'
         run: |
-          # Best-effort (|| true): never let cleanup fail the build. fallocate is unreliable on the
-          # runner's overlay fs, so build the swapfile with dd.
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL || true
-          sudo dd if=/dev/zero of=/swapfile bs=1M count=10240 status=none || true
-          sudo chmod 600 /swapfile || true
-          sudo mkswap /swapfile || true
-          sudo swapon /swapfile || true
-          df -h / ; free -h || true
+          df -h /
 
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
