@@ -25,10 +25,6 @@ jobs:
             target-name: macos-arm64
             bin: ferra-vrm
             archive: ferra-vrm-macos-arm64.tar.gz
-          - os: macos-13
-            target-name: macos-x64
-            bin: ferra-vrm
-            archive: ferra-vrm-macos-x64.tar.gz
           - os: ubuntu-latest
             target-name: linux-x64
             bin: ferra-vrm
@@ -39,6 +35,19 @@ jobs:
       - name: Install Linux deps
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev
+
+      # The candle + bevy release build is disk- and memory-heavy; the default ubuntu runner
+      # OOM-kills the link step (~7 min in) and can run out of disk. Reclaim preinstalled SDKs
+      # we don't use and add swap so the build has headroom.
+      - name: Free disk space + add swap (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          sudo fallocate -l 10G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          df -h / ; free -h
 
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
