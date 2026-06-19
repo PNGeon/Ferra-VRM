@@ -1,8 +1,9 @@
+use crate::vrm::gltf::coordinate::convert_vrm0_glb;
 use bevy::app::{App, Plugin};
-use bevy::asset::io::Reader;
+use bevy::asset::io::{Reader, VecReader};
 use bevy::asset::{Asset, AssetLoader, Handle, LoadContext};
 use bevy::gltf::{
-    DefaultGltfImageSampler, Gltf, GltfAssetLabel, GltfError, GltfLoader, GltfLoaderSettings,
+    DefaultGltfImageSampler, Gltf, GltfAssetLabel, GltfLoader, GltfLoaderSettings,
     extensions::GltfExtensionHandlers,
 };
 use bevy::image::{
@@ -97,7 +98,7 @@ struct VrmLoader(GltfLoader);
 impl AssetLoader for VrmLoader {
     type Asset = VrmAsset;
     type Settings = ();
-    type Error = GltfError;
+    type Error = Box<dyn core::error::Error + Send + Sync + 'static>;
     async fn load(
         &self,
         reader: &mut dyn Reader,
@@ -108,7 +109,13 @@ impl AssetLoader for VrmLoader {
             include_source: true,
             ..default()
         };
-        let gltf = self.0.load(reader, &settings, load_context).await?;
+        // Read the raw bytes so a VRM 0.0 model can be migrated to 1.0 BEFORE Bevy's GltfLoader
+        // builds the GPU meshes (mutating gltf.source after load would be too late).
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes).await?;
+        let bytes = convert_vrm0_glb(&bytes).unwrap_or(bytes);
+        let mut reader = VecReader::new(bytes);
+        let gltf = self.0.load(&mut reader, &settings, load_context).await?;
         Ok(VrmAsset {
             images: gltf
                 .source

@@ -2839,7 +2839,7 @@ dependencies = [
 
 [[package]]
 name = "ferra-vrm"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bevy",
  "bevy_egui",
@@ -3748,6 +3748,8 @@ dependencies = [
  "num-traits",
  "png",
  "tiff",
+ "zune-core",
+ "zune-jpeg",
 ]
 
 [[package]]

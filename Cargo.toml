@@ -1,6 +1,6 @@
 [package]
 name = "ferra-vrm"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 description = "Ferra-VRM — a native-Rust AI VTuber companion. Bring your own LLM and voice."
 license = "MIT OR Apache-2.0"
@@ -32,8 +32,9 @@ resolver = "3"
 members = ["crates/vrm_stage_core"]
 
 [workspace.dependencies]
-# ktx2 + basis-universal decode GPU-compressed (UASTC) textures for optional rooms.
-bevy = { version = "0.18", features = ["ktx2", "basis-universal"] }
+# ktx2 + basis-universal decode GPU-compressed (UASTC) textures for optional rooms;
+# jpeg for VRoid VRMs (which embed JPEG textures — loader errors without it).
+bevy = { version = "0.18", features = ["ktx2", "basis-universal", "jpeg"] }
 bevy_vrm1 = "0.7.1"
 bevy_panorbit_camera = "0.34"
 bevy_egui = "0.39.1"

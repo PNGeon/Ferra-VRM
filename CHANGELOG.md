@@ -3,6 +3,24 @@
 All notable changes to Ferra-VRM are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [0.2.0] — 2026-06-19
+
+### Added
+
+- **VRM 0.0 support.** Legacy VRM 0.0 models — a large share of existing community avatars (older
+  VRoid exports, Booth models) — now load and animate correctly. They previously rendered nothing
+  (no `VRMC_vrm` extension → `bevy_vrm1` init never fired). The vendored `bevy_vrm1` migrates the
+  legacy `VRM` extension to 1.0 (humanoid bones array→map; `blendShapeMaster`→expressions) and, on
+  the raw glb before mesh build, negates the X axis across all geometry + transforms — VRM 0.0 is
+  authored in Unity's left-handed space, so it loads X-mirrored and asymmetric VRMA would otherwise
+  play back mirrored (arms/legs wrong) — plus a 180° facing correction applied as a runtime root
+  transform. Verified across two different exporters; conversion bails gracefully (model still
+  renders) on compressed/sparse/external-buffer glbs.
+- **JPEG textures**: VRoid VRMs that embed JPEG textures now load (added the `jpeg` image feature;
+  previously errored with `invalid image mime type: image/jpeg`).
+
+[0.2.0]: https://github.com/PNGeon/Ferra-VRM/releases/tag/v0.2.0
+
 ## [0.1.0] — 2026-06-18
 
 First public release. A native-Rust AI VTuber companion: bring your own LLM and voice.

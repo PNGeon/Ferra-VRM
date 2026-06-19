@@ -1,3 +1,5 @@
+pub mod coordinate;
+
 pub mod extensions;
 
 pub mod materials;

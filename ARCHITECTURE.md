@@ -101,9 +101,19 @@ Buffered events are **`Message`** (`MessageReader`/`MessageWriter`/`add_message`
 
 ## Vendored dependency
 
-`vendor/bevy_vrm1/` is a lightly-patched copy of `bevy_vrm1` 0.7.1 (wired in via
-`[patch.crates-io]`). Upstream panics on some real-world VRM variants — a springbone extension
-missing `colliderGroups`, and expression-based lookAt (`todo!`) — which would abort the whole app
-on a dropped VRM. Two `// PATCH (Ferra-VRM)` edits degrade both to graceful no-ops so any VRM
-loads without crashing. Upstream license (MIT/Apache-2.0) is retained in the vendored directory;
-the patches are tracked there for a future upstream PR.
+`vendor/bevy_vrm1/` is a patched copy of `bevy_vrm1` 0.7.1 (wired in via `[patch.crates-io]`), with
+two kinds of change (all marked `// PATCH (Ferra-VRM)`):
+
+1. **Crash-hardening.** Upstream panics on some real-world VRM variants — a springbone extension
+   missing `colliderGroups`, and expression-based lookAt (`todo!`) — which would abort the whole
+   app on a dropped VRM. Both degrade to graceful no-ops.
+2. **VRM 0.0 support** (`src/vrm/gltf/coordinate.rs` + a hook in `loader.rs`). Upstream is VRM 1.0
+   only. `convert_vrm0_glb` runs on the raw glb bytes before Bevy builds the meshes: it migrates the
+   legacy `VRM` extension → `VRMC_vrm` (humanoid bones, expressions) and negates the X axis across
+   all geometry + transforms (VRM 0.0 is authored left-handed → loads X-mirrored). A 180° facing
+   correction is applied as a runtime root transform in `initialize.rs` (kept out of the skeleton so
+   VRMA retargeting cancels it). Bails gracefully — model still renders, just mirrored — on
+   compressed/sparse/external-buffer glbs it can't safely rewrite.
+
+Upstream license (MIT/Apache-2.0) is retained in the vendored directory; the patches are tracked
+there for a future upstream PR (the VRM 0.0 work especially).

@@ -96,6 +96,14 @@ fn spawn_vrm(
             cmd.insert(look_at);
         }
 
+        // VRM 0.0 models are authored left-handed; the loader negates X to un-mirror them, after
+        // which they face −Z. Rotate the avatar root 180° about Y so it faces the camera. This is a
+        // runtime root transform (not baked into the skeleton), so VRMA retargeting — which works in
+        // the scene's local space — cancels it and the animation plays correctly.
+        if extensions.vrmc_vrm.spec_version.starts_with('0') {
+            cmd.insert(Transform::from_rotation(Quat::from_rotation_y(std::f32::consts::PI)));
+        }
+
         if let Some(vrm_path) = handle.0.path() {
             #[cfg(feature = "develop")]
             {

@@ -51,7 +51,7 @@ load an avatar, a `.vrma` to animate it, a `.toml` to load a character card.
 
 ## Features
 
-- 🎭 **VRM 1.0 avatars** with automatic spring-bone physics + **VRMA** animation playback
+- 🎭 **VRM 1.0 *and* 0.0 avatars** with automatic spring-bone physics + **VRMA** animation playback (legacy 0.0 models are converted on load)
 - 🫧 **Idle aliveness** — natural auto-blink so a loaded avatar reads as alive
 - 🧠 **Bring your own LLM** — any OpenAI-compatible endpoint, with built-in connection test + model picker
 - 🎴 **Character cards** — name / persona / style / scenario / greeting → system prompt; share as `.toml`
@@ -128,9 +128,10 @@ Prebuilt binaries are published for **Windows (x64)**, **macOS (Apple Silicon + 
 
 ## Bring your own avatar
 
-Ferra-VRM works with any **VRM 1.0** model — export one from
+Ferra-VRM works with **VRM 1.0 and VRM 0.0** models — export one from
 [VRoid Studio](https://vroid.com/en/studio) or grab a free one from
-[VRoid Hub](https://hub.vroid.com/en). Just drop the `.vrm` on the window.
+[VRoid Hub](https://hub.vroid.com/en) or Booth. Just drop the `.vrm` on the window. Legacy VRM 0.0
+models (Unity-era, left-handed) are migrated and un-mirrored automatically on load.
 
 ## Contributing
 
