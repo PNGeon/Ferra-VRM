@@ -34,14 +34,9 @@ jobs:
 
       - name: Install Linux deps
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev
-
-      # The candle release build is disk-heavy; reclaim preinstalled SDKs we don't use. Best-effort.
-      - name: Free disk space (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL || true
-          df -h /
+        # wayland-dev + xkbcommon-dev: bevy 0.18 pulls wayland-sys, whose build script panics if the
+        # wayland-client pkg-config file is missing. asound + udev cover ALSA audio + device input.
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
 
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
