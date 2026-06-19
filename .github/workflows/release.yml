@@ -42,12 +42,14 @@ jobs:
       - name: Free disk space + add swap (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
-          sudo fallocate -l 10G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
-          df -h / ; free -h
+          # Best-effort (|| true): never let cleanup fail the build. fallocate is unreliable on the
+          # runner's overlay fs, so build the swapfile with dd.
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL || true
+          sudo dd if=/dev/zero of=/swapfile bs=1M count=10240 status=none || true
+          sudo chmod 600 /swapfile || true
+          sudo mkswap /swapfile || true
+          sudo swapon /swapfile || true
+          df -h / ; free -h || true
 
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
