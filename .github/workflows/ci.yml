@@ -11,7 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Linux deps
-        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev
+        # wayland-dev + xkbcommon-dev: bevy 0.18's wayland-sys build script panics without
+        # wayland-client's pkg-config file. Keep in sync with release.yml.
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
